@@ -101,7 +101,7 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
         if 'follow_column' in rule:
             follow_column = rule['follow_column']
             for_field = rule['for_field']
-            df[for_field] = df[follow_column].fillna(method='ffill')
+            df[for_field] = df[follow_column].ffill()
         elif 'ingest_only_where' in rule:
             for column, value in rule['ingest_only_where'].items():
                 df = df[df[column] == value]
