@@ -1,5 +1,6 @@
 import re
 import os
+import pandas as pd
 from typing import Dict, Any, List, Callable
 from ipaddress import IPv4Network, IPv4Address
 from collections import defaultdict
@@ -106,13 +107,22 @@ def process_file(template: InputTemplate, filename: str) -> List[Dict[str, str]]
     output_format = OutputFormat(datacenter_prefix)
     processed_rows = []
 
-    # This is a placeholder for file reading logic
-    # In a real implementation, you would read the file and iterate over its rows
-    with open(filename, 'r') as file:
-        for row in file:  # This is simplified; you'll need to parse the file based on its format
-            parsed_data = template.parse_row(row)
-            processed_row = output_format.format_row(parsed_data)
-            processed_rows.append(processed_row)
+    # Read the file using pandas
+    if filename.endswith('.csv'):
+        df = pd.read_csv(filename)
+    elif filename.endswith(('.xls', '.xlsx')):
+        df = pd.read_excel(filename)
+    elif filename.endswith('.txt'):
+        # For text files, we'll assume it's space-separated and has headers
+        df = pd.read_csv(filename, sep='\s+')
+    else:
+        raise ValueError(f"Unsupported file format: {filename}")
+
+    # Process each row
+    for _, row in df.iterrows():
+        parsed_data = template.parse_row(row.to_dict())
+        processed_row = output_format.format_row(parsed_data)
+        processed_rows.append(processed_row)
 
     return processed_rows
 
@@ -154,6 +164,8 @@ def main():
     templates = {
         '.txt': cisco_template,
         '.csv': ipam_template,
+        '.xlsx': ipam_template,  # Assuming IPAM data can be in Excel format too
+        '.xls': ipam_template,   # For older Excel formats
         # Add more templates for other file types as needed
     }
 
@@ -162,7 +174,7 @@ def main():
         "datacenter1-cisco-routes.txt",
         "datacenter1-ipam-export.csv",
         "datacenter2-cisco-routes.txt",
-        "datacenter2-solarwinds-export.csv",
+        "datacenter2-solarwinds-export.xlsx",
         "datacenter3-efficientip-export.csv"
     ]
 

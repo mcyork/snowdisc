@@ -1,0 +1,79 @@
+output_fields:
+  - Discovery Range
+  - Network IP
+  - Network mask (or bits)
+  - Location
+
+global_rules:
+  - ignore_cidr_less_than: 16
+
+templates:
+  T1:
+    name: DC1 SolarWinds
+    file_pattern: dc1-dc1solwind-*.xlsx
+    mappings:
+      Discovery Range: 
+        - column: site_
+        - column: Address
+        - join: _
+      Network IP: Address
+      Network mask (or bits): CIDR
+      Location: Group Display name
+    rules:
+      - follow_column: Type
+        for_field: Location
+      - ingest_only_where:
+          Type: Subnet
+
+  T2:
+    name: DC2 EfficientIP
+    file_pattern: dc2-effip-*.csv
+    mappings:
+      Discovery Range:
+        - column: site
+        - column: Start
+        - join: _
+      Network IP: Start
+      Network mask (or bits): Prefix
+      Location: "Class param: svb site"
+
+  T3:
+    name: DC3 SolarWinds
+    file_pattern: dc3-dc3solwind-*.xlsx
+    mappings:
+      Discovery Range:
+        - column: site_
+        - column: Address
+        - join: _
+      Network IP: Address
+      Network mask (or bits): CIDR
+      Location:
+        - column: Location
+        - column: Comments
+        - join: " "
+    rules:
+      - ignore_row_where:
+          CIDR:
+            - 0
+            - 1
+            - ""
+
+  T4:
+    name: DC4 Infoblox
+    file_pattern: dc4-infoblox-*.csv
+    mappings:
+      Discovery Range:
+        - column: site_
+        - column: address*
+        - join: _
+      Network IP: address*
+      Network mask (or bits):
+        - column: netmask*
+        - function: to_cidr
+      Location:
+        - column: EA-Site
+        - column: EA-Zone
+        - column: EA-Channel
+        - join: " "
+    rules:
+      - convert_netmask_to_cidr: netmask*
