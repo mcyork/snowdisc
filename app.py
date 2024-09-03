@@ -6,6 +6,7 @@ from typing import Dict, Any, List, Callable
 from ipaddress import IPv4Network, IPv4Address
 from collections import defaultdict
 import fnmatch
+import numpy as np
 
 class InputTemplate:
     def __init__(self, name: str, column_mappings: Dict[str, Any], ip_format: str, 
@@ -111,7 +112,13 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
         elif 'strip_decimal' in rule:
             field = rule['strip_decimal']
             print(f"Applying strip_decimal to field: {field}")
-            df[field] = df[field].apply(strip_decimal).astype('int64')
+            
+            # First, apply strip_decimal
+            df[field] = df[field].apply(strip_decimal)
+            
+            # Then, fill NaN values with a placeholder (e.g., -1) and convert to int
+            df[field] = df[field].fillna(-1).astype('int64')
+            
             print(f"Sample values after strip_decimal: {df[field].head()}")
             print(f"Data type after strip_decimal: {df[field].dtype}")
 
@@ -187,9 +194,9 @@ def strip_decimal(value):
         float_value = float(value)
         # Use int() to truncate the decimal part
         return int(float_value)
-    except ValueError:
-        # If conversion fails, return the original value
-        return value
+    except (ValueError, TypeError):
+        # If conversion fails, return NaN
+        return np.nan
 
 def main():
     print("Starting main function")
