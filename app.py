@@ -209,9 +209,19 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
 
     return processed_rows
 
-def consolidate_networks(networks: List[Dict[str, str]]) -> List[Dict[str, str]]:
-    consolidated = {}
+def consolidate_networks(networks: List[Dict[str, str]], datacenter: str) -> List[Dict[str, str]]:
+    # First, deduplicate networks based on 'Network IP' within the datacenter
+    unique_networks = {}
     for network in networks:
+        ip = network['Network IP']
+        mask = int(network['Network mask (or bits)'].strip('/'))
+        location = network['Location']
+        
+        if ip not in unique_networks or mask < int(unique_networks[ip]['Network mask (or bits)'].strip('/')):
+            unique_networks[ip] = network
+
+    consolidated = {}
+    for network in unique_networks.values():
         ip = IPv4Address(network['Network IP'])
         mask = int(network['Network mask (or bits)'].strip('/'))
         location = network['Location']
@@ -222,7 +232,7 @@ def consolidate_networks(networks: List[Dict[str, str]]) -> List[Dict[str, str]]
         
         if key not in consolidated or mask < int(consolidated[key]['Network mask (or bits)'].strip('/')):
             consolidated[key] = {
-                'Discovery Range': network['Discovery Range'].split('_')[0] + f"_{containing_16.network_address}",
+                'Discovery Range': f"{datacenter}_{containing_16.network_address}",
                 'Network IP': str(containing_16.network_address),
                 'Network mask (or bits)': '/16',
                 'Location': location
@@ -294,7 +304,7 @@ def main():
             print(f"    Processed {len(processed_data)} rows")
             datacenter_data.extend(processed_data)
         print(f"  Total processed rows for {datacenter}: {len(datacenter_data)}")
-        consolidated = consolidate_networks(datacenter_data)
+        consolidated = consolidate_networks(datacenter_data, datacenter)
         print(f"  Consolidated networks for {datacenter}: {len(consolidated)}")
         all_consolidated_networks.extend(consolidated)
 
