@@ -10,15 +10,22 @@ import numpy as np
 import csv
 
 def netmask_to_cidr(netmask: str) -> int:
-    # print(f"netmask_to_cidr called with argument: {netmask}")  # Commented out
     try:
-        # First, try to interpret the input as a CIDR notation
-        if isinstance(netmask, str) and netmask.startswith('/'):
-            return int(netmask[1:])
+        # Handle CIDR notation
+        if isinstance(netmask, str) and '/' in netmask:
+            return int(netmask.strip('/'))
+        # Handle integer input
         elif isinstance(netmask, int):
             return netmask
-        # If it's not CIDR notation, treat it as a netmask
-        return IPv4Network(f"0.0.0.0/{netmask}").prefixlen
+        # Handle float input (like 24.0)
+        elif isinstance(netmask, float):
+            return int(netmask)
+        # Handle netmask format (like 255.255.248.0)
+        elif isinstance(netmask, str) and '.' in netmask:
+            return IPv4Network(f"0.0.0.0/{netmask}").prefixlen
+        # If it's not any of the above, try to interpret as CIDR
+        else:
+            return int(float(str(netmask).strip()))
     except ValueError:
         print(f"Warning: Invalid netmask or CIDR: {netmask}")
         return -1  # or any other value to indicate an error
@@ -122,7 +129,7 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
             mask_column = template.column_mappings['Network mask (or bits)']
             if isinstance(mask_column, list):
                 mask_column = mask_column[0]['column']
-            df = df[df[mask_column].apply(lambda x: int(float(str(x).strip('/'))) if pd.notnull(x) else 0) >= min_cidr]
+            df = df[df[mask_column].apply(lambda x: netmask_to_cidr(x) if pd.notnull(x) else 0) >= min_cidr]
 
     # Apply template-specific rules
     for rule in template.rules:
