@@ -8,6 +8,19 @@ from collections import defaultdict
 import fnmatch
 import numpy as np
 
+def netmask_to_cidr(netmask: str) -> int:
+    try:
+        # First, try to interpret the input as a CIDR notation
+        if isinstance(netmask, str) and netmask.startswith('/'):
+            return int(netmask[1:])
+        elif isinstance(netmask, int):
+            return netmask
+        # If it's not CIDR notation, treat it as a netmask
+        return IPv4Network(f"0.0.0.0/{netmask}").prefixlen
+    except ValueError:
+        print(f"Warning: Invalid netmask or CIDR: {netmask}")
+        return -1  # or any other value to indicate an error
+
 class InputTemplate:
     def __init__(self, name: str, column_mappings: Dict[str, Any], ip_format: str, 
                  mask_format: str, custom_parsers: Dict[str, Callable] = None,
@@ -42,18 +55,6 @@ def extract_datacenter_prefix(filename: str) -> str:
         return match.group(1)
     raise ValueError(f"Unable to extract datacenter prefix from filename: {filename}")
 
-def netmask_to_cidr(netmask: str) -> int:
-    try:
-        # First, try to interpret the input as a CIDR notation
-        if netmask.startswith('/'):
-            return int(netmask[1:])
-        
-        # If it's not CIDR notation, treat it as a netmask
-        return IPv4Network(f"0.0.0.0/{netmask}").prefixlen
-    except ValueError:
-        print(f"Warning: Invalid netmask or CIDR: {netmask}")
-        return -1  # or any other value to indicate an error
-
 def load_templates(config_file: str) -> tuple[Dict[str, InputTemplate], Dict[str, Any]]:
     with open(config_file, 'r') as file:
         config = yaml.safe_load(file)
@@ -61,14 +62,8 @@ def load_templates(config_file: str) -> tuple[Dict[str, InputTemplate], Dict[str
     templates = {}
     for template_name, template_config in config['templates'].items():
         column_mappings = template_config['mappings']
-        custom_parsers = {}
-        rules = []
-
-        if 'rules' in template_config:
-            for rule in template_config['rules']:
-                if 'convert_netmask_to_cidr' in rule:
-                    custom_parsers['to_cidr'] = netmask_to_cidr
-                rules.append(rule)
+        custom_parsers = {'to_cidr': netmask_to_cidr}  # Always add to_cidr function
+        rules = template_config.get('rules', [])
 
         # Convert file globbing pattern to regex pattern
         file_pattern = fnmatch.translate(template_config['file_pattern'])
