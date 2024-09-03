@@ -35,7 +35,7 @@ templates:
         - join: _
       Network IP: Start
       Network mask (or bits): Prefix
-      Location: "Class param: svb site"
+      Location: "Class param: 14"
 
   T3:
     name: DC3 SolarWinds
@@ -71,9 +71,9 @@ templates:
         - column: netmask*
         - function: to_cidr
       Location:
-        - column: EA-Site
-        - column: EA-Zone
-        - column: EA-Channel
+        - column: Site
+        - column: Zone
+        - column: Space
         - join: " "
     rules:
       - convert_netmask_to_cidr: netmask*
