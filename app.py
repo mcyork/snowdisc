@@ -7,6 +7,7 @@ from ipaddress import IPv4Network, IPv4Address
 from collections import defaultdict
 import fnmatch
 import numpy as np
+import csv
 
 def netmask_to_cidr(netmask: str) -> int:
     print(f"netmask_to_cidr called with argument: {netmask}")
@@ -267,9 +268,18 @@ def main():
         all_consolidated_networks.extend(consolidated)
 
     print(f"\nTotal consolidated networks across all datacenters: {len(all_consolidated_networks)}")
-    print("\nConsolidated networks across all datacenters:")
-    for network in all_consolidated_networks:
-        print(network)
+    
+    # Write consolidated networks to a CSV file
+    output_file = 'consolidated_networks.csv'
+    with open(output_file, 'w', newline='') as csvfile:
+        fieldnames = ['Discovery Range', 'Network IP', 'Network mask (or bits)', 'Location']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        
+        writer.writeheader()
+        for network in all_consolidated_networks:
+            writer.writerow(network)
+    
+    print(f"\nConsolidated networks have been written to {output_file}")
 
 if __name__ == "__main__":
     main()
