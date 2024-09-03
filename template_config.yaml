@@ -62,15 +62,13 @@ templates:
     mappings:
       Discovery Range:
         - prefix: dc4_
-        - column: address*
-      Network IP: address*
+        - column: address
+      Network IP: address
       Network mask (or bits):
-        - column: netmask*
+        - column: netmask
         - function: to_cidr
       Location:
         - column: Site
         - column: Zone
         - column: Space
         - join: " "
-    rules:
-      - convert_netmask_to_cidr: netmask*

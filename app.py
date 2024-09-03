@@ -43,7 +43,16 @@ def extract_datacenter_prefix(filename: str) -> str:
     raise ValueError(f"Unable to extract datacenter prefix from filename: {filename}")
 
 def netmask_to_cidr(netmask: str) -> int:
-    return IPv4Network(f"0.0.0.0/{netmask}").prefixlen
+    try:
+        # First, try to interpret the input as a CIDR notation
+        if netmask.startswith('/'):
+            return int(netmask[1:])
+        
+        # If it's not CIDR notation, treat it as a netmask
+        return IPv4Network(f"0.0.0.0/{netmask}").prefixlen
+    except ValueError:
+        print(f"Warning: Invalid netmask or CIDR: {netmask}")
+        return -1  # or any other value to indicate an error
 
 def load_templates(config_file: str) -> tuple[Dict[str, InputTemplate], Dict[str, Any]]:
     with open(config_file, 'r') as file:
@@ -156,6 +165,12 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
         try:
             ip = processed_row['Network IP']
             mask = processed_row['Network mask (or bits)']
+            if isinstance(mask, str) and mask.startswith('/'):
+                mask = mask[1:]  # Remove leading '/' if present
+            mask = int(mask)  # Ensure it's an integer
+            if mask < 0 or mask > 32:
+                print(f"Warning: Invalid CIDR value: {mask}")
+                continue  # Skip this row
             network = IPv4Network(f"{ip}/{mask}", strict=False)
             processed_row['network'] = network
         except ValueError as e:
