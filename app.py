@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import yaml
 from typing import Dict, Any, List, Callable
-from ipaddress import IPv4Network, IPv4Address
+from ipaddress import IPv4Network, IPv4Address, ip_network
 from collections import defaultdict
 import fnmatch
 import numpy as np
@@ -84,6 +84,18 @@ def load_templates(config_file: str) -> tuple[Dict[str, InputTemplate], Dict[str
 
     return templates, config
 
+def is_rfc1918(ip: str) -> bool:
+    try:
+        ip_obj = ip_network(ip, strict=False)
+        rfc1918_ranges = [
+            ip_network('10.0.0.0/8'),
+            ip_network('172.16.0.0/12'),
+            ip_network('192.168.0.0/16')
+        ]
+        return any(ip_obj.overlaps(rfc1918_range) for rfc1918_range in rfc1918_ranges)
+    except ValueError:
+        return False
+
 def process_file(template: InputTemplate, filename: str, config: Dict[str, Any]) -> List[Dict[str, str]]:
     datacenter_prefix = extract_datacenter_prefix(filename)
     output_format = OutputFormat(datacenter_prefix)
@@ -98,12 +110,19 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
         raise ValueError(f"Unsupported file format: {filename}")
 
     # Apply global rules
-    if 'global_rules' in config and 'ignore_cidr_less_than' in config['global_rules']:
-        min_cidr = config['global_rules']['ignore_cidr_less_than']
-        mask_column = template.column_mappings['Network mask (or bits)']
-        if isinstance(mask_column, list):
-            mask_column = mask_column[0]['column']
-        df = df[df[mask_column].apply(lambda x: int(str(x).strip('/')) if pd.notnull(x) else 0) >= min_cidr]
+    if 'global_rules' in config:
+        if 'ignore_cidr_less_than' in config['global_rules']:
+            min_cidr = config['global_rules']['ignore_cidr_less_than']
+            mask_column = template.column_mappings['Network mask (or bits)']
+            if isinstance(mask_column, list):
+                mask_column = mask_column[0]['column']
+            df = df[df[mask_column].apply(lambda x: int(str(x).strip('/')) if pd.notnull(x) else 0) >= min_cidr]
+        
+        if config['global_rules'].get('process_only_rfc1918', False):
+            ip_column = template.column_mappings['Network IP']
+            if isinstance(ip_column, list):
+                ip_column = ip_column[0]['column']
+            df = df[df[ip_column].apply(is_rfc1918)]
 
     # Apply template-specific rules
     for rule in template.rules:
@@ -221,6 +240,11 @@ def main():
     templates, config = load_templates(config_file)
     print(f"Loaded {len(templates)} templates")
     
+    # Add the RFC 1918 rule to global rules
+    if 'global_rules' not in config:
+        config['global_rules'] = {}
+    config['global_rules']['process_only_rfc1918'] = True
+
     for template_name, template in templates.items():
         print(f"Template: {template_name}, File pattern: {template.file_pattern}")
 
