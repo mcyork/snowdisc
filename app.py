@@ -111,7 +111,7 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
         elif 'strip_decimal' in rule:
             field = rule['strip_decimal']
             print(f"Applying strip_decimal to field: {field}")
-            df[field] = df[field].apply(strip_decimal)
+            df[field] = df[field].apply(strip_decimal).astype('int64')
             print(f"Sample values after strip_decimal: {df[field].head()}")
             print(f"Data type after strip_decimal: {df[field].dtype}")
 
