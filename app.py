@@ -108,6 +108,9 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
         elif 'ignore_row_where' in rule:
             for column, values in rule['ignore_row_where'].items():
                 df = df[~df[column].isin(values)]
+        elif 'strip_decimal' in rule:
+            field = rule['strip_decimal']
+            df[field] = df[field].apply(strip_decimal)
 
     # Process each row
     for _, row in df.iterrows():
@@ -174,6 +177,11 @@ def consolidate_networks(networks: List[Dict[str, str]]) -> List[Dict[str, str]]
             }
     
     return list(consolidated.values())
+
+def strip_decimal(value):
+    if isinstance(value, str):
+        return re.sub(r'\.0+$', '', value)
+    return value
 
 def main():
     print("Starting main function")

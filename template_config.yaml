@@ -17,7 +17,7 @@ templates:
         - column: Address
       Network IP: Address
       Network mask (or bits): CIDR
-      Location: Group Display name
+      Location: "Display name"
     rules:
       - follow_column: Type
         for_field: Location
