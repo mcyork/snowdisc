@@ -116,13 +116,21 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
             if isinstance(input_mapping, list):
                 # Handle complex mappings
                 values = []
+                prefix = None
                 for item in input_mapping:
-                    if 'column' in item:
-                        values.append(str(row[item['column']]))
+                    if 'prefix' in item:
+                        prefix = item['prefix']
+                    elif 'column' in item:
+                        value = str(row[item['column']])
+                        values.append(value)
                     elif 'function' in item:
                         func = template.custom_parsers[item['function']]
                         values.append(str(func(row[item['column']])))
-                processed_row[output_field] = item.get('join', '').join(values)
+                
+                if prefix:
+                    processed_row[output_field] = f"{prefix}{item.get('join', '').join(values)}"
+                else:
+                    processed_row[output_field] = item.get('join', '').join(values)
             else:
                 processed_row[output_field] = row[input_mapping]
 

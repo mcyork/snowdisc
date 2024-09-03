@@ -13,9 +13,8 @@ templates:
     file_pattern: dc1-dc1solwind-*.xlsx
     mappings:
       Discovery Range: 
-        - column: site_
+        - prefix: dc1_
         - column: Address
-        - join: _
       Network IP: Address
       Network mask (or bits): CIDR
       Location: Group Display name
@@ -30,9 +29,8 @@ templates:
     file_pattern: dc2-effip-*.csv
     mappings:
       Discovery Range:
-        - column: site
+        - prefix: dc2_
         - column: Start
-        - join: _
       Network IP: Start
       Network mask (or bits): Prefix
       Location: "Class param: 14"
@@ -42,9 +40,8 @@ templates:
     file_pattern: dc3-dc3solwind-*.xlsx
     mappings:
       Discovery Range:
-        - column: site_
+        - prefix: dc3_
         - column: Address
-        - join: _
       Network IP: Address
       Network mask (or bits): CIDR
       Location:
@@ -63,9 +60,8 @@ templates:
     file_pattern: dc4-infoblox-*.csv
     mappings:
       Discovery Range:
-        - column: site_
+        - prefix: dc4_
         - column: address*
-        - join: _
       Network IP: address*
       Network mask (or bits):
         - column: netmask*
