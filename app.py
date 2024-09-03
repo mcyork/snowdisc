@@ -209,7 +209,7 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
 
     return processed_rows
 
-def consolidate_networks(networks: List[Dict[str, str]], datacenter: str) -> List[Dict[str, str]]:
+def consolidate_networks(networks: List[Dict[str, str]], datacenter_prefix: str) -> List[Dict[str, str]]:
     # First, deduplicate networks based on 'Network IP' within the datacenter
     unique_networks = {}
     for network in networks:
@@ -232,7 +232,7 @@ def consolidate_networks(networks: List[Dict[str, str]], datacenter: str) -> Lis
         
         if key not in consolidated or mask < int(consolidated[key]['Network mask (or bits)'].strip('/')):
             consolidated[key] = {
-                'Discovery Range': f"{datacenter}_{containing_16.network_address}",
+                'Discovery Range': f"{datacenter_prefix}_{containing_16.network_address}",
                 'Network IP': str(containing_16.network_address),
                 'Network mask (or bits)': '/16',
                 'Location': location
@@ -298,13 +298,16 @@ def main():
         print(f"\nProcessing datacenter: {datacenter}")
         template = templates[datacenter]
         datacenter_data = []
+        datacenter_prefix = None
         for file in files:
             print(f"  Processing file: {file}")
             processed_data = process_file(template, file, config)
             print(f"    Processed {len(processed_data)} rows")
             datacenter_data.extend(processed_data)
+            if datacenter_prefix is None:
+                datacenter_prefix = extract_datacenter_prefix(file)
         print(f"  Total processed rows for {datacenter}: {len(datacenter_data)}")
-        consolidated = consolidate_networks(datacenter_data, datacenter)
+        consolidated = consolidate_networks(datacenter_data, datacenter_prefix)
         print(f"  Consolidated networks for {datacenter}: {len(consolidated)}")
         all_consolidated_networks.extend(consolidated)
 
