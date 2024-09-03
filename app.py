@@ -165,12 +165,14 @@ def consolidate_networks(networks: List[Dict[str, str]]) -> List[Dict[str, str]]
 
 def main():
     print("Starting main function")
-    config_file = 'template_config.yaml'  # Path to your YAML config file
+    config_file = 'template_config.yaml'
     print(f"Loading templates from {config_file}")
     templates, config = load_templates(config_file)
     print(f"Loaded {len(templates)} templates")
+    
+    for template_name, template in templates.items():
+        print(f"Template: {template_name}, File pattern: {template.file_pattern}")
 
-    # Use the loaded templates instead of hardcoding them
     input_files = [
         "dc1-dc1solwind-data.xlsx",
         "dc2-effip-data.csv",
@@ -182,13 +184,17 @@ def main():
     # Group files by datacenter
     datacenter_files = defaultdict(list)
     for file in input_files:
-        print(f"Processing file: {file}")
+        print(f"\nProcessing file: {file}")
         for template_name, template in templates.items():
+            print(f"  Checking against template: {template_name}")
+            print(f"    File pattern: {template.file_pattern}")
             if re.match(template.file_pattern, file):
                 datacenter = template_name
                 datacenter_files[datacenter].append(file)
-                print(f"  Matched template: {template_name}")
+                print(f"    Matched!")
                 break
+            else:
+                print(f"    Not matched")
         else:
             print(f"  Warning: No matching template found for {file}")
 
