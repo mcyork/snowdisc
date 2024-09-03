@@ -312,18 +312,31 @@ def main():
         all_consolidated_networks.extend(consolidated)
 
     print(f"\nTotal consolidated networks across all datacenters: {len(all_consolidated_networks)}")
+
+    # Deduplicate based on 'Discovery Range'
+    deduplicated_networks = {}
+    for network in all_consolidated_networks:
+        discovery_range = network['Discovery Range']
+        if discovery_range not in deduplicated_networks:
+            deduplicated_networks[discovery_range] = network
+
+    final_networks = list(deduplicated_networks.values())
+    print(f"Total unique networks after deduplication: {len(final_networks)}")
+
+    # Sort the final networks based on 'Discovery Range'
+    final_networks.sort(key=lambda x: x['Discovery Range'])
     
-    # Write consolidated networks to a CSV file
+    # Write deduplicated and sorted networks to a CSV file
     output_file = 'consolidated_networks.csv'
     with open(output_file, 'w', newline='') as csvfile:
         fieldnames = ['Discovery Range', 'Network IP', 'Network mask (or bits)', 'Location']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         
         writer.writeheader()
-        for network in all_consolidated_networks:
+        for network in final_networks:
             writer.writerow(network)
     
-    print(f"\nConsolidated networks have been written to {output_file}")
+    print(f"\nDeduplicated and sorted networks have been written to {output_file}")
 
 if __name__ == "__main__":
     main()
