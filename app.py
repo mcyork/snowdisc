@@ -122,7 +122,7 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
             mask_column = template.column_mappings['Network mask (or bits)']
             if isinstance(mask_column, list):
                 mask_column = mask_column[0]['column']
-            df = df[df[mask_column].apply(lambda x: int(str(x).strip('/')) if pd.notnull(x) else 0) >= min_cidr]
+            df = df[df[mask_column].apply(lambda x: int(float(str(x).strip('/'))) if pd.notnull(x) else 0) >= min_cidr]
 
     # Apply template-specific rules
     for rule in template.rules:
@@ -167,6 +167,7 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
                             if func_name in template.custom_parsers:
                                 func = template.custom_parsers[func_name]
                                 value = func(value)
+                                # print(f"Applied {func_name} to {item['column']}, result: {value}")
                             else:
                                 print(f"Warning: Custom parser '{func_name}' not found")
                         values.append(str(value))
@@ -177,6 +178,8 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
                     processed_row[output_field] = ' '.join(values)
             else:
                 processed_row[output_field] = row[input_mapping]
+
+        # print(f"Processed row: {processed_row}")
 
         # Create IPv4Network object
         try:
