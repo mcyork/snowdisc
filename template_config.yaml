@@ -5,8 +5,8 @@ output_fields:
   - Location
 
 global_rules:
-  - ignore_cidr_less_than: 16
-  - process_only_rfc1918: true
+  ignore_cidr_less_than: 16
+  process_only_rfc1918: true
 
 templates:
   T1:

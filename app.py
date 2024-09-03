@@ -111,18 +111,18 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
 
     # Apply global rules
     if 'global_rules' in config:
+        if config['global_rules'].get('process_only_rfc1918', False):
+            ip_column = template.column_mappings['Network IP']
+            if isinstance(ip_column, list):
+                ip_column = ip_column[0]['column']
+            df = df[df[ip_column].apply(is_rfc1918)]
+
         if 'ignore_cidr_less_than' in config['global_rules']:
             min_cidr = config['global_rules']['ignore_cidr_less_than']
             mask_column = template.column_mappings['Network mask (or bits)']
             if isinstance(mask_column, list):
                 mask_column = mask_column[0]['column']
             df = df[df[mask_column].apply(lambda x: int(str(x).strip('/')) if pd.notnull(x) else 0) >= min_cidr]
-        
-        if config['global_rules'].get('process_only_rfc1918', False):
-            ip_column = template.column_mappings['Network IP']
-            if isinstance(ip_column, list):
-                ip_column = ip_column[0]['column']
-            df = df[df[ip_column].apply(is_rfc1918)]
 
     # Apply template-specific rules
     for rule in template.rules:
@@ -167,7 +167,6 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
                             if func_name in template.custom_parsers:
                                 func = template.custom_parsers[func_name]
                                 value = func(value)
-                                # print(f"Applied {func_name} to {item['column']}, result: {value}")
                             else:
                                 print(f"Warning: Custom parser '{func_name}' not found")
                         values.append(str(value))
@@ -178,8 +177,6 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
                     processed_row[output_field] = ' '.join(values)
             else:
                 processed_row[output_field] = row[input_mapping]
-
-        # print(f"Processed row: {processed_row}")
 
         # Create IPv4Network object
         try:
