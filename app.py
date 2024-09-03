@@ -113,6 +113,7 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
             print(f"Applying strip_decimal to field: {field}")
             df[field] = df[field].apply(strip_decimal)
             print(f"Sample values after strip_decimal: {df[field].head()}")
+            print(f"Data type after strip_decimal: {df[field].dtype}")
 
     # Process each row
     for _, row in df.iterrows():
@@ -181,17 +182,14 @@ def consolidate_networks(networks: List[Dict[str, str]]) -> List[Dict[str, str]]
     return list(consolidated.values())
 
 def strip_decimal(value):
-    if isinstance(value, str):
-        # Remove trailing zeros after decimal point
-        value = re.sub(r'\.0+$', '', value)
-        # If the result is a whole number, convert to integer
-        if '.' not in value:
-            return int(value)
+    try:
+        # Convert to float first to handle both string and float inputs
+        float_value = float(value)
+        # Use int() to truncate the decimal part
+        return int(float_value)
+    except ValueError:
+        # If conversion fails, return the original value
         return value
-    elif isinstance(value, float):
-        # Convert float to integer if it's a whole number
-        return int(value) if value.is_integer() else value
-    return value
 
 def main():
     print("Starting main function")
