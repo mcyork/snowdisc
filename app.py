@@ -9,6 +9,7 @@ import fnmatch
 import numpy as np
 
 def netmask_to_cidr(netmask: str) -> int:
+    print(f"netmask_to_cidr called with argument: {netmask}")
     try:
         # First, try to interpret the input as a CIDR notation
         if isinstance(netmask, str) and netmask.startswith('/'):
@@ -61,8 +62,10 @@ def load_templates(config_file: str) -> tuple[Dict[str, InputTemplate], Dict[str
 
     templates = {}
     for template_name, template_config in config['templates'].items():
+        print(f"Loading template: {template_name}")
         column_mappings = template_config['mappings']
-        custom_parsers = {'to_cidr': netmask_to_cidr}  # Always add to_cidr function
+        custom_parsers = {'to_cidr': netmask_to_cidr}
+        print(f"Custom parsers for {template_name}: {custom_parsers}")
         rules = template_config.get('rules', [])
 
         # Convert file globbing pattern to regex pattern
@@ -138,23 +141,25 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
                     if 'prefix' in item:
                         prefix = item['prefix']
                     elif 'column' in item:
-                        value = str(row[item['column']])
-                        values.append(value)
-                    elif 'function' in item:
-                        func = template.custom_parsers[item['function']]
-                        values.append(str(func(row[item['column']])))
+                        value = row[item['column']]
+                        if 'function' in item:
+                            func_name = item['function']
+                            if func_name in template.custom_parsers:
+                                func = template.custom_parsers[func_name]
+                                value = func(value)
+                                print(f"Applied {func_name} to {item['column']}, result: {value}")
+                            else:
+                                print(f"Warning: Custom parser '{func_name}' not found")
+                        values.append(str(value))
                 
                 if prefix:
-                    processed_row[output_field] = f"{prefix}{item.get('join', '').join(values)}"
+                    processed_row[output_field] = f"{prefix}{''.join(values)}"
                 else:
-                    processed_row[output_field] = item.get('join', '').join(values)
+                    processed_row[output_field] = ' '.join(values)
             else:
                 processed_row[output_field] = row[input_mapping]
 
-        # Apply any custom parsing
-        for field, parser in template.custom_parsers.items():
-            if field in processed_row:
-                processed_row[field] = parser(processed_row[field])
+        print(f"Processed row: {processed_row}")
 
         # Create IPv4Network object
         try:
