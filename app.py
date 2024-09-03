@@ -8,6 +8,8 @@ from collections import defaultdict
 import fnmatch
 import numpy as np
 import csv
+import sys
+import shutil
 
 def netmask_to_cidr(netmask: str) -> int:
     try:
@@ -65,6 +67,11 @@ def extract_datacenter_prefix(filename: str) -> str:
     raise ValueError(f"Unable to extract datacenter prefix from filename: {filename}")
 
 def load_templates(config_file: str) -> tuple[Dict[str, InputTemplate], Dict[str, Any]]:
+    # Check if the config file exists in the current directory
+    if not os.path.exists(config_file):
+        # If not, extract it from the bundled resources
+        extract_config_file(config_file)
+    
     with open(config_file, 'r') as file:
         config = yaml.safe_load(file)
 
@@ -90,6 +97,21 @@ def load_templates(config_file: str) -> tuple[Dict[str, InputTemplate], Dict[str
         )
 
     return templates, config
+
+def extract_config_file(config_file: str):
+    # Get the path to the bundled config file
+    if getattr(sys, 'frozen', False):
+        # Running as compiled executable
+        bundle_dir = sys._MEIPASS
+    else:
+        # Running as script
+        bundle_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    bundled_config = os.path.join(bundle_dir, config_file)
+    
+    # Copy the bundled config file to the current directory
+    shutil.copy2(bundled_config, config_file)
+    print(f"Config file '{config_file}' has been extracted to the current directory.")
 
 def is_rfc1918(ip: str) -> bool:
     try:
