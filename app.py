@@ -182,7 +182,15 @@ def consolidate_networks(networks: List[Dict[str, str]]) -> List[Dict[str, str]]
 
 def strip_decimal(value):
     if isinstance(value, str):
-        return re.sub(r'\.0+$', '', value)
+        # Remove trailing zeros after decimal point
+        value = re.sub(r'\.0+$', '', value)
+        # If the result is a whole number, convert to integer
+        if '.' not in value:
+            return int(value)
+        return value
+    elif isinstance(value, float):
+        # Convert float to integer if it's a whole number
+        return int(value) if value.is_integer() else value
     return value
 
 def main():
