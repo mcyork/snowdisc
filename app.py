@@ -164,8 +164,11 @@ def consolidate_networks(networks: List[Dict[str, str]]) -> List[Dict[str, str]]
     return list(consolidated.values())
 
 def main():
+    print("Starting main function")
     config_file = 'template_config.yaml'  # Path to your YAML config file
+    print(f"Loading templates from {config_file}")
     templates, config = load_templates(config_file)
+    print(f"Loaded {len(templates)} templates")
 
     # Use the loaded templates instead of hardcoding them
     input_files = [
@@ -174,27 +177,40 @@ def main():
         "dc3-dc3solwind-data.xlsx",
         "dc4-infoblox-data.csv"
     ]
+    print(f"Input files: {input_files}")
 
     # Group files by datacenter
     datacenter_files = defaultdict(list)
     for file in input_files:
+        print(f"Processing file: {file}")
         for template_name, template in templates.items():
             if re.match(template.file_pattern, file):
                 datacenter = template_name
                 datacenter_files[datacenter].append(file)
+                print(f"  Matched template: {template_name}")
                 break
+        else:
+            print(f"  Warning: No matching template found for {file}")
+
+    print(f"Grouped files by datacenter: {dict(datacenter_files)}")
 
     # Process and consolidate each datacenter separately
     all_consolidated_networks = []
     for datacenter, files in datacenter_files.items():
+        print(f"\nProcessing datacenter: {datacenter}")
         template = templates[datacenter]
         datacenter_data = []
         for file in files:
-            datacenter_data.extend(process_file(template, file, config))
+            print(f"  Processing file: {file}")
+            processed_data = process_file(template, file, config)
+            print(f"    Processed {len(processed_data)} rows")
+            datacenter_data.extend(processed_data)
+        print(f"  Total processed rows for {datacenter}: {len(datacenter_data)}")
         consolidated = consolidate_networks(datacenter_data)
+        print(f"  Consolidated networks for {datacenter}: {len(consolidated)}")
         all_consolidated_networks.extend(consolidated)
 
-    # Print results (in a real scenario, you'd write this to an output file)
+    print(f"\nTotal consolidated networks across all datacenters: {len(all_consolidated_networks)}")
     print("\nConsolidated networks across all datacenters:")
     for network in all_consolidated_networks:
         print(network)
