@@ -5,6 +5,7 @@ import yaml
 from typing import Dict, Any, List, Callable
 from ipaddress import IPv4Network, IPv4Address
 from collections import defaultdict
+import fnmatch
 
 class InputTemplate:
     def __init__(self, name: str, column_mappings: Dict[str, Any], ip_format: str, 
@@ -59,6 +60,9 @@ def load_templates(config_file: str) -> tuple[Dict[str, InputTemplate], Dict[str
                     custom_parsers['to_cidr'] = netmask_to_cidr
                 rules.append(rule)
 
+        # Convert file globbing pattern to regex pattern
+        file_pattern = fnmatch.translate(template_config['file_pattern'])
+
         templates[template_name] = InputTemplate(
             name=template_config['name'],
             column_mappings=column_mappings,
@@ -66,7 +70,7 @@ def load_templates(config_file: str) -> tuple[Dict[str, InputTemplate], Dict[str
             mask_format='cidr',
             custom_parsers=custom_parsers,
             rules=rules,
-            file_pattern=template_config['file_pattern']
+            file_pattern=file_pattern
         )
 
     return templates, config
