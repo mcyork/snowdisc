@@ -23,6 +23,7 @@ templates:
         for_field: Location
       - ingest_only_where:
           Type: Subnet
+      - strip_decimal: CIDR
 
   T2:
     name: DC2 EfficientIP

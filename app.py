@@ -110,7 +110,9 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
                 df = df[~df[column].isin(values)]
         elif 'strip_decimal' in rule:
             field = rule['strip_decimal']
+            print(f"Applying strip_decimal to field: {field}")
             df[field] = df[field].apply(strip_decimal)
+            print(f"Sample values after strip_decimal: {df[field].head()}")
 
     # Process each row
     for _, row in df.iterrows():
