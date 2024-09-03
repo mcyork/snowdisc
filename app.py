@@ -10,7 +10,7 @@ import numpy as np
 import csv
 
 def netmask_to_cidr(netmask: str) -> int:
-    print(f"netmask_to_cidr called with argument: {netmask}")
+    # print(f"netmask_to_cidr called with argument: {netmask}")  # Commented out
     try:
         # First, try to interpret the input as a CIDR notation
         if isinstance(netmask, str) and netmask.startswith('/'):
@@ -167,7 +167,7 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
                             if func_name in template.custom_parsers:
                                 func = template.custom_parsers[func_name]
                                 value = func(value)
-                                print(f"Applied {func_name} to {item['column']}, result: {value}")
+                                # print(f"Applied {func_name} to {item['column']}, result: {value}")
                             else:
                                 print(f"Warning: Custom parser '{func_name}' not found")
                         values.append(str(value))
@@ -179,7 +179,7 @@ def process_file(template: InputTemplate, filename: str, config: Dict[str, Any])
             else:
                 processed_row[output_field] = row[input_mapping]
 
-        print(f"Processed row: {processed_row}")
+        # print(f"Processed row: {processed_row}")
 
         # Create IPv4Network object
         try:
