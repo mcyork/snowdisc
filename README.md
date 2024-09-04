@@ -1,6 +1,23 @@
 # SnowDisc
 
+SnowDisc is a powerful, YAML-driven file processing tool designed for flexible data manipulation and transformation tasks.
+
 [![Build Windows Executable](https://github.com/mcyork/snowdisc/actions/workflows/build.yml/badge.svg)](https://github.com/mcyork/snowdisc/actions/workflows/build.yml)
+
+## Table of Contents
+- [Overview](#overview)
+- [Features](#features)
+- [Learning Opportunities](#learning-opportunities)
+- [Use Cases](#use-cases)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Usage](#usage)
+  - [Configuration](#configuration)
+- [Development](#development)
+- [Contributing](#contributing)
+- [License](#license)
+- [Acknowledgements](#acknowledgements)
 
 ## Overview
 
@@ -31,11 +48,111 @@ SnowDisc can be useful for:
 
 ## Getting Started
 
-[Add instructions for installation and basic usage here]
+The SnowDisc application is designed to be run from the command line. It requires a YAML configuration file to define the file processing rules.
+
+### Prerequisites
+
+- Python 3.7 or later
+- YAML configuration file
+
+### Installation
+
+1. Clone the repository:
+    ```
+    git clone https://github.com/mcyork/snowdisc.git
+    ```
+2. Navigate to the project directory:
+    ```
+    cd snowdisc
+    ```
+3. Install the dependencies:
+    ```
+    pip install -r requirements.txt
+    ```
+
+### Usage
+
+To run the application, use the following command:
+```
+python snowdisc.py
+```
+### Configuration
+
+The application uses a YAML configuration file to define the file processing rules. The configuration file should be named `config.yaml` and placed in the root of the project directory.
+
+Here's an example configuration file structure with explanations:
+
+input:
+  - file: path/to/input/file1.csv
+    type: csv
+  - file: path/to/input/file2.json
+    type: json
+
+## The 'input' section defines the input files and their types
+
+processing:
+  - operation: merge
+    fields:
+      - id
+      - name
+  - operation: filter
+    condition: "age > 18"
+## The 'processing' section defines the operations to be performed on the data
+
+output:
+  file: path/to/output/result.xlsx
+  type: excel
+## The 'output' section specifies the output file and its type
+
+This configuration would:
+1. Load data from a CSV and a JSON file
+2. Merge the data based on 'id' and 'name' fields
+3. Filter the results to include only records where 'age' is greater than 18
+4. Save the output as an Excel file
+
+## Development
+
+To set up the development environment:
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/mcyork/snowdisc.git
+   ```
+2. Create a virtual environment:
+   ```
+   python -m venv venv
+   source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+   ```
+3. Install development dependencies:
+   ```
+   pip install -r requirements-dev.txt
+   ```
+4. Run tests:
+   ```
+   pytest
+   ```
 
 ## Contributing
 
-[Add information about how others can contribute to the project]
+Contributions to SnowDisc are welcome! If you'd like to contribute:
+
+1. Fork the repository
+2. Create a new branch for your feature or bug fix
+3. Make your changes and commit them with clear, descriptive messages
+4. Push your changes to your fork
+5. Submit a pull request to the main repository
+
+Please ensure your code adheres to the project's coding standards and include tests for new features.
 
 ## License
 
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Acknowledgements
+
+SnowDisc makes use of the following open-source libraries:
+- PyYAML for YAML parsing
+- Pandas for data manipulation
+- PyInstaller for creating standalone executables
+
+Special thanks to the Python community for their invaluable resources and documentation.
