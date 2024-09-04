@@ -10,6 +10,8 @@ import numpy as np
 import csv
 import sys
 import shutil
+import argparse
+import glob
 
 def netmask_to_cidr(netmask: str) -> int:
     try:
@@ -272,6 +274,30 @@ def strip_decimal(value):
         # If conversion fails, return NaN
         return np.nan
 
+def get_input_files():
+    parser = argparse.ArgumentParser(description='Process network data files.')
+    parser.add_argument('-f', '--files', nargs='+', help='Input files to process')
+    parser.add_argument('-d', '--directory', help='Directory containing input files')
+    args = parser.parse_args()
+
+    if args.files:
+        input_files = args.files
+    elif args.directory:
+        input_files = glob.glob(os.path.join(args.directory, '*'))
+    else:
+        print("No input files or directory specified. Using default patterns.")
+        input_files = glob.glob('dc*-*-data.*')
+
+    # Filter out non-csv and non-excel files
+    input_files = [f for f in input_files if f.endswith(('.csv', '.xlsx', '.xls'))]
+
+    if not input_files:
+        print("No valid input files found.")
+        exit(1)
+
+    print(f"Input files: {input_files}")
+    return input_files
+
 def main():
     print("Starting main function")
     config_file = 'template_config.yaml'
@@ -287,13 +313,7 @@ def main():
     for template_name, template in templates.items():
         print(f"Template: {template_name}, File pattern: {template.file_pattern}")
 
-    input_files = [
-        "dc1-dc1solwind-data.xlsx",
-        "dc2-effip-data.csv",
-        "dc3-dc3solwind-data.xlsx",
-        "dc4-infoblox-data.csv"
-    ]
-    print(f"Input files: {input_files}")
+    input_files = get_input_files()
 
     # Group files by datacenter
     datacenter_files = defaultdict(list)
