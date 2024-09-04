@@ -1,6 +1,6 @@
 # SnowDisc
 
-SnowDisc is a, YAML-driven file processing tool designed for flexible data manipulation and transformation tasks.
+SnowDisc is a YAML-driven file processing tool designed for flexible data manipulation and transformation tasks.
 
 [![Build Windows Executable](https://github.com/mcyork/snowdisc/actions/workflows/build.yml/badge.svg)](https://github.com/mcyork/snowdisc/actions/workflows/build.yml)
 
@@ -78,37 +78,9 @@ python snowdisc.py
 ```
 ### Configuration
 
-The application uses a YAML configuration file to define the file processing rules. The configuration file should be named `config.yaml` and placed in the root of the project directory.
+The application uses a YAML configuration file to define the file processing rules. The configuration file should be named `template_config.yaml` and placed in the root of the project directory.
 
-Here's an example configuration file structure with explanations:
-
-input:
-  - file: path/to/input/file1.csv
-    type: csv
-  - file: path/to/input/file2.json
-    type: json
-
-## The 'input' section defines the input files and their types
-
-processing:
-  - operation: merge
-    fields:
-      - id
-      - name
-  - operation: filter
-    condition: "age > 18"
-## The 'processing' section defines the operations to be performed on the data
-
-output:
-  file: path/to/output/result.xlsx
-  type: excel
-## The 'output' section specifies the output file and its type
-
-This configuration would:
-1. Load data from a CSV and a JSON file
-2. Merge the data based on 'id' and 'name' fields
-3. Filter the results to include only records where 'age' is greater than 18
-4. Save the output as an Excel file
+See the `template_config.yaml` file for an example of the configuration file.
 
 ## Development
 
@@ -127,11 +99,6 @@ To set up the development environment:
    ```
    pip install -r requirements-dev.txt
    ```
-4. Run tests:
-   ```
-   pytest
-   ```
-
 ## Contributing
 
 Contributions to SnowDisc are welcome! If you'd like to contribute:
@@ -142,7 +109,12 @@ Contributions to SnowDisc are welcome! If you'd like to contribute:
 4. Push your changes to your fork
 5. Submit a pull request to the main repository
 
-Please ensure your code adheres to the project's coding standards and include tests for new features.
+Please ensure your code adheres to the project's coding standards.
+
+## TODO
+
+- output file type/name
+- whatever comes up :)
 
 ## License
 
@@ -155,4 +127,3 @@ SnowDisc makes use of the following open-source libraries:
 - Pandas for data manipulation
 - PyInstaller for creating standalone executables
 
-Special thanks to the Python community for their invaluable resources and documentation.
