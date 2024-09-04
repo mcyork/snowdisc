@@ -1,6 +1,6 @@
 # SnowDisc
 
-SnowDisc is a powerful, YAML-driven file processing tool designed for flexible data manipulation and transformation tasks.
+SnowDisc is a, YAML-driven file processing tool designed for flexible data manipulation and transformation tasks.
 
 [![Build Windows Executable](https://github.com/mcyork/snowdisc/actions/workflows/build.yml/badge.svg)](https://github.com/mcyork/snowdisc/actions/workflows/build.yml)
 
